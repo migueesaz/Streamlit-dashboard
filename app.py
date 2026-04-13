@@ -42,7 +42,7 @@ def login():
 def dashboard():
     st.sidebar.title("Menu Principal")
     st.sidebar.markdown("---")
-    st.siderbar.write(f"👤 {st.session_state.username}")
+    st.sidebar.write(f"👤 {st.session_state.username}")
     st.sidebar.markdown("---")
 
     if st.sidebar.button("Cerrar Sesión"):
