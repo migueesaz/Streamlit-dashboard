@@ -36,7 +36,6 @@ def login():
             st.rerun()
         else:
             st.error("Usuario o contraseña incorrectos")
-
 # -------------------------
 # DASHBOARD
 # -------------------------
@@ -52,15 +51,42 @@ def dashboard():
     st.write("Análisis de ventas por ciudad y persona")
 
     df = pd.read_csv("data.csv")
-
+    st.sidebar.subheader("Filtros")
+    #CIUDAD
     ciudad = st.sidebar.multiselect(
         "Ciudad",
         options=df["ciudad"].unique(),
         default=df["ciudad"].unique()
     )
-
-    df_filtrado = df[df["ciudad"].isin(ciudad)]
-
+    #VENTAS
+    min_ventas, max_ventas = st.sidebar.slider(
+        "Rango de Ventas",
+        min_value=int(df["ventas"].min()),
+        max_value=int(df["ventas"].max()),
+        value=(int(df["ventas"].min()), int(df["ventas"].max()))
+    )
+    # EDAD
+    min_edad, max_edad = st.sidebar.slider(
+        "Rango de Edad",
+        min_value=int(df["edad"].min()),
+        max_value=int(df["edad"].max()),
+        value=(int(df["edad"].min()), int(df["edad"].max()))
+    )
+    #NOMBRE
+    busqueda_nombre = st.sidebar.text_input("Buscar por Nombre")
+    df_filtrado = df[
+        df["ciudad"].isin(ciudad) & 
+        (df["ventas"] >= min_ventas) & 
+        (df["ventas"] <= max_ventas) & 
+        (df["edad"] >= min_edad) & (df["edad"] <= max_edad)
+    ]
+    if busqueda_nombre:
+        df_filtrado = df_filtrado[
+            df_filtrado["nombre"].str.contains(busqueda_nombre, case=False)
+         ]
+    st.sidebar.write(f"Total registros: {len(df_filtrado)}")
+    if st.sidebar.button("Limpiar Filtros"):
+        st.rerun()
     # 📊 Métricas
     col1, col2, col3 = st.columns(3)
 
