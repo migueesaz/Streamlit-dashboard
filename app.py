@@ -40,7 +40,10 @@ def login():
 # DASHBOARD
 # -------------------------
 def dashboard():
-    st.sidebar.title(f"Bienvenido, {st.session_state.username} 👋")
+    st.sidebar.title("Menu Principal")
+    st.sidebar.markdown("---")
+    st.siderbar.write(f"👤 {st.session_state.username}")
+    st.sidebar.markdown("---")
 
     if st.sidebar.button("Cerrar Sesión"):
         st.session_state.logged_in = False
@@ -90,24 +93,29 @@ def dashboard():
     # 📊 Métricas
     col1, col2, col3 = st.columns(3)
 
-    col1.metric("Total Personas", len(df_filtrado))
-    col2.metric("Edad Promedio", round(df_filtrado["edad"].mean(), 2))
-    col3.metric("Ventas Totales", f"${df_filtrado['ventas'].sum():,.2f}")
+    with col1:
+        st.metric("Personas", len(df_filtrado))
+    with col2:
+        st.metric("Ventas", f"${df_filtrado['ventas'].sum():,.0f}")
+    with col3:
+        st.metric("📊Promedio", f"${df_filtrado['ventas'].mean():,.0f}")
 
     # 📈 Gráfico
-    st.subheader("Ventas por persona")
-
     fig, ax = plt.subplots()
     ax.bar(df_filtrado["nombre"], df_filtrado["ventas"])
+    ax.set_title("Ventas por Persona")
+    ax.set_xlabel("")
+    ax.set_ylabel("Ventas")
     plt.xticks(rotation=45)
-
     st.pyplot(fig)
     # 📋 Tabla
     st.subheader("Datos")
-    st.dataframe(df_filtrado)
+    st.dataframe(df_filtrado,use_container_width=True)
 # -------------------------
 # 🚀 CONTROL PRINCIPAL (ÚNICO)
 # -------------------------
+st.markdown("<h1 style='text-align: center; color: #4CAF50;'>📊 Dashboard de Ventas</h1>", unsafe_allow_html=True)
+st.caption("🚀Dashboard de Ventas creado por Migueesaz con Streamlit")
 if st.session_state.logged_in:
     dashboard()
 else:
