@@ -19,15 +19,14 @@ if "logged_in" not in st.session_state:
 
 if "username" not in st.session_state:
     st.session_state.username = ""
-
 # -------------------------
 # LOGIN
 # -------------------------
 def login():
     st.title("🔒 Iniciar Sesión")
 
-    username = st.text_input("Usuario")
-    password = st.text_input("Contraseña", type="password")
+    username = st.text_input("Usuario", key="login_user")
+    password = st.text_input("Contraseña", type="password", key="login_pass")
 
     if st.button("Entrar"):
         if username in users and bcrypt.checkpw(password.encode('utf-8'), users[username]):
@@ -36,6 +35,26 @@ def login():
             st.rerun()
         else:
             st.error("Usuario o contraseña incorrectos")
+    #BOTON PARA REGISTRAR NUEVO USUARIO
+    if st.button("Registrar Nuevo Usuario"):
+        st.session_state.view = "register"
+        st.rerun()
+#REGISTRO DE USUARIOS (OPCIONAL)
+def register():
+    st.title("📝 Registro de Usuario")
+    new_username = st.text_input("Nuevo Usuario", key="register_user")
+    new_password = st.text_input("Nueva Contraseña", type="password", key="register_pass")
+    if st.button("Registrar"):
+        if new_username in users:
+            st.error("El usuario ya existe")
+        else:
+            hashed = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
+            users[new_username] = hashed
+            st.success("Usuario registrado exitosamente")
+    if st.button("Volver al Login"):
+        st.session_state.view = "login"
+        st.rerun()   
+
 # -------------------------
 # DASHBOARD
 # -------------------------
@@ -50,11 +69,12 @@ def dashboard():
         st.session_state.username = ""
         st.rerun()
 
-    st.title("📊 Dashboard de Ventas")
+    st.title("VENTAS")
     st.write("Análisis de ventas por ciudad y persona")
 
     df = pd.read_csv("data.csv")
     st.sidebar.subheader("Filtros")
+
     #CIUDAD
     ciudad = st.sidebar.multiselect(
         "Ciudad",
@@ -115,8 +135,15 @@ def dashboard():
 # 🚀 CONTROL PRINCIPAL (ÚNICO)
 # -------------------------
 st.markdown("<h1 style='text-align: center; color: #4CAF50;'>📊 Dashboard de Ventas</h1>", unsafe_allow_html=True)
-st.caption("🚀Dashboard de Ventas creado por Migueesaz con Streamlit")
-if st.session_state.logged_in:
-    dashboard()
+st.caption("🚀 Dashboard de Ventas creado por Migueesaz con Streamlit")
+
+if not st.session_state.logged_in:
+    if "view" not in st.session_state:
+        st.session_state.view = "login"
+
+    if st.session_state.view == "login":
+        login()
+    elif st.session_state.view == "register":
+        register()
 else:
-    login()
+    dashboard()
