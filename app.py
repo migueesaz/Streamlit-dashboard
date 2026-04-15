@@ -2,15 +2,23 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import bcrypt
+import json
+import os
 st.set_page_config(page_title="Dashboard de Ventas", layout="wide")
 
 # -------------------------
 # 👤 USUARIOS
 # -------------------------
-users = {
-    "migueesaz": bcrypt.hashpw("Yeezy21*".encode('utf-8'), bcrypt.gensalt()),
-    "admin": bcrypt.hashpw("admin123".encode('utf-8'), bcrypt.gensalt())
-}
+users_file = "users.json"
+def load_users():
+    if os.path.exists(users_file):
+        with open(users_file, "r") as f:
+            return json.load(f)
+    return {}
+def save_users(users):
+    with open(users_file, "w") as f:
+        json.dump(users, f)
+users = load_users()
 # -------------------------
 # SESSION STATE
 # -------------------------
@@ -29,7 +37,7 @@ def login():
     password = st.text_input("Contraseña", type="password", key="login_pass")
 
     if st.button("Entrar"):
-        if username in users and bcrypt.checkpw(password.encode('utf-8'), users[username]):
+        if username in users and bcrypt.checkpw(password.encode('utf-8'), users[username].encode('utf-8')):
             st.session_state.logged_in = True
             st.session_state.username = username
             st.rerun()
@@ -50,7 +58,13 @@ def register():
         else:
             hashed = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
             users[new_username] = hashed
+            save_users(users)
             st.success("Usuario registrado exitosamente")
+            #Auto Login después de registro
+            st.session_state.logged_in = True
+            st.session_state.username = new_username
+            st.session_state.view = "Dashboard"
+            st.rerun()
     if st.button("Volver al Login"):
         st.session_state.view = "login"
         st.rerun()   
